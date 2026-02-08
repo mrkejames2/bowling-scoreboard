@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bowler Admin</title>
+  <script src="/static/admin_bowler.js?v=4"></script>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .mode-toggle {
+      margin-bottom: 16px;
+    }
+
+    .mode-toggle label {
+      margin: 0 8px;
+      cursor: pointer;
+    }
+
+    .bowler-selector {
+      margin-bottom: 16px;
+    }
+
+    .bowler-button {
+      padding: 6px 10px;
+      margin: 0 4px;
+      cursor: pointer;
+      border-radius: 4px;
+      border: 1px solid #333;
+      background: #eee;
+    }
+
+    .bowler-button.active {
+      background: #333;
+      color: #fff;
+    }
+
+    .pin-grid {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .pin-row {
+      display: flex;
+      justify-content: center;
+      margin: 4px 0;
+    }
+
+    .pin {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 4px;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 18px;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    .active-pin {
+      background: red;
+      color: white;
+    }
+
+    .disabled {
+      background: #ccc;
+      color: #666;
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .button-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 10px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #scorecard {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    .bowler-block {
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 8px;
+      width: 100%;
+    }
+
+    .bowler-title {
+      font-weight: bold;
+      margin-bottom: 4px;
+      text-align: left;
+    }
+
+    .frames-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .frame-box {
+      width: 70px;
+      border: 2px solid #333;
+      margin: 4px;
+      padding: 6px;
+      background: #fafafa;
+      text-align: center;
+      border-radius: 6px;
+    }
+
+    .frame-box.current {
+      background: #ffe08a;
+      border-color: #d49b00;
+    }
+
+    .frame-number {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .shots {
+      font-size: 16px;
+      margin-top: 4px;
+    }
+
+    .frame-total {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <h1>Bowler Admin</h1>
+
+    <div class="mode-toggle">
+      <label>
+        <input type="radio" name="mode" value="baker" checked onchange="changeMode('baker')">
+        Baker
+      </label>
+      <label>
+        <input type="radio" name="mode" value="peterson" onchange="changeMode('peterson')">
+        Peterson
+      </label>
+    </div>
+
+    <div class="bowler-selector" id="bowler-selector">
+      Current Bowler:
+      <button class="bowler-button active" onclick="setBowler('A')" id="bowler-A">A</button>
+      <button class="bowler-button" onclick="setBowler('B')" id="bowler-B">B</button>
+      <button class="bowler-button" onclick="setBowler('C')" id="bowler-C">C</button>
+      <button class="bowler-button" onclick="setBowler('D')" id="bowler-D">D</button>
+      <button class="bowler-button" onclick="setBowler('E')" id="bowler-E">E</button>
+    </div>
+
+    <div id="pins" class="pin-grid"></div>
+
+    <div class="button-row">
+      <button onclick="sendStrike()">X Strike</button>
+      <button onclick="sendSpare()">/ Spare</button>
+      <button onclick="submitPins()">Submit Pins</button>
+      <button onclick="undoLastShot()">Undo</button>
+      <button onclick="resetGame()">Reset</button>
+    </div>
+
+    <h2>Scorecard</h2>
+    <div id="scorecard"></div>
+
+  </div>
+</body>
+</html>

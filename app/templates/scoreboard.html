@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Scoreboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #111;
+      color: white;
+      font-family: sans-serif;
+      overflow-x: hidden;
+    }
+
+    .pin-deck {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      margin-left: 20px;
+    }
+
+    .pin-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .pin {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      box-shadow: 0 0 4px rgba(255,255,255,0.2);
+      transition: 0.2s ease;
+    }
+
+    .pin.standing {
+      background: #fff;
+      box-shadow: 0 0 8px #fff;
+    }
+
+    .lower-third {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 900px;
+      height: 90px;
+      background: rgba(0,0,0,0.85);
+      border-top: 3px solid #e50914;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      box-sizing: border-box;
+    }
+
+    .team-block {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .team-name {
+      font-size: 26px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .team-score {
+      font-size: 40px;
+      font-weight: bold;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .center-info {
+      text-align: center;
+    }
+
+    .frame-label {
+      font-size: 18px;
+      color: #ccc;
+    }
+
+    .frame-value {
+      font-size: 26px;
+      font-weight: bold;
+    }
+
+    #frame-shots-current {
+      font-size: 16px;
+      margin-top: 4px;
+      color: #ccc;
+    }
+  </style>
+
+  <script>
+    async function loadScoreboard() {
+      const res = await fetch("/api/state");
+      const data = await res.json();
+
+      const mode = data.mode || "baker";
+      const standingPins = (data.standing_pins || []).map(Number);
+
+      let frames;
+      let label;
+      let score;
+      let frameIndex;
+      let shotsDisplay;
+
+      if (mode === "baker") {
+          frames = data.frames || [];
+          label = "BAKER";
+      } else {
+          const active = data.active_bowler || "A";
+          const bowlers = data.bowlers || {};
+          const b = bowlers[active] || { frames: [], total: 0 };
+          frames = b.frames || [];
+          label = `PETERSON – ${active}`;
+      }
+
+
+      let lastFrameWithShots = frames.findLastIndex
+        ? frames.findLastIndex(f => f.shots.length > 0)
+        : (function() {
+            for (let i = frames.length - 1; i >= 0; i--) {
+              if (frames[i].shots && frames[i].shots.length > 0) return i;
+            }
+            return -1;
+          })();
+
+      if (lastFrameWithShots === -1) lastFrameWithShots = 0;
+
+      const frame = frames[lastFrameWithShots] || { shots: [], score: 0 };
+      const displayShotsCurrent = (frame.shots || []).map(s => s === 0 ? "-" : s);
+
+      score = frame.score ?? 0;
+      frameIndex = lastFrameWithShots + 1;
+      shotsDisplay = displayShotsCurrent.join(" ");
+
+      document.getElementById("team-name").innerText = label;
+      document.getElementById("team-score").innerText = score;
+      document.getElementById("frame-value").innerText = frameIndex;
+      document.getElementById("frame-shots-current").innerText = shotsDisplay;
+
+      const pinMap = {
+        row1: [7,8,9,10],
+        row2: [4,5,6],
+        row3: [2,3],
+        row4: [1]
+      };
+
+      const deck = document.getElementById("pin-deck");
+      deck.innerHTML = "";
+
+      Object.values(pinMap).forEach(row => {
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "pin-row";
+
+        row.forEach(pin => {
+          const div = document.createElement("div");
+          div.className = "pin";
+
+          if (standingPins.includes(pin)) {
+            div.classList.add("standing");
+          }
+
+          rowDiv.appendChild(div);
+        });
+
+        deck.appendChild(rowDiv);
+      });
+    }
+
+    setInterval(loadScoreboard, 1000);
+    window.onload = loadScoreboard;
+  </script>
+</head>
+
+<body>
+
+  <div class="lower-third">
+
+    <div class="team-block">
+      <div class="team-name" id="team-name">TEAM</div>
+      <div class="team-score" id="team-score">0</div>
+    </div>
+
+    <div class="center-info">
+      <div class="frame-label">Frame</div>
+      <div class="frame-value" id="frame-value">1</div>
+      <div id="frame-shots-current">- -</div>
+    </div>
+
+    <div id="pin-deck" class="pin-deck"></div>
+
+  </div>
+
+</body>
+</html>
